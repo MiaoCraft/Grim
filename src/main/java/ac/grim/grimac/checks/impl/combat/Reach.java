@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package ac.grim.grimac.checks.impl.combat;
 
+import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
@@ -37,7 +38,7 @@ import java.util.*;
 
 // You may not copy the check unless you are licensed under GPL
 @CheckData(name = "Reach", configName = "Reach", setback = 10)
-public class Reach extends PacketCheck {
+public class Reach extends Check implements PacketCheck {
     // Only one flag per reach attack, per entity, per tick.
     // We store position because lastX isn't reliable on teleports.
     private final Map<Integer, Vector3d> playerAttackQueue = new LinkedHashMap<>();
@@ -62,7 +63,7 @@ public class Reach extends PacketCheck {
             // Don't let the player teleport to bypass reach
             if (player.getSetbackTeleportUtil().shouldBlockMovement()) {
                 event.setCancelled(true);
-                player.cancelledPackets.incrementAndGet();
+                player.onPacketCancel();
                 return;
             }
 
@@ -73,7 +74,7 @@ public class Reach extends PacketCheck {
                 // This is because we don't track paintings.
                 if (shouldModifyPackets() && player.compensatedEntities.serverPositionsMap.containsKey(action.getEntityId())) {
                     event.setCancelled(true);
-                    player.cancelledPackets.incrementAndGet();
+                    player.onPacketCancel();
                 }
                 return;
             }
@@ -89,7 +90,7 @@ public class Reach extends PacketCheck {
 
             if (shouldModifyPackets() && cancelImpossibleHits && isKnownInvalid(entity)) {
                 event.setCancelled(true);
-                player.cancelledPackets.incrementAndGet();
+                player.onPacketCancel();
             }
         }
 

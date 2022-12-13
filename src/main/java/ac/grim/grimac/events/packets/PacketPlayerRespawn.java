@@ -61,7 +61,7 @@ public class PacketPlayerRespawn extends PacketListenerAbstract {
                 player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get() + 1, () -> player.compensatedEntities.getSelf().isDead = false);
             }
 
-            event.getPostTasks().add(player::sendTransaction);
+            event.getTasksAfterSend().add(player::sendTransaction);
         }
 
         if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
@@ -83,11 +83,14 @@ public class PacketPlayerRespawn extends PacketListenerAbstract {
             GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player == null) return;
 
-            List<Runnable> tasks = event.getPostTasks();
+            List<Runnable> tasks = event.getTasksAfterSend();
             tasks.add(player::sendTransaction);
 
             // Force the player to accept a teleport before respawning
+            // (We won't process movements until they accept a teleport, we won't let movements though either)
+            // Also invalidate previous positions
             player.getSetbackTeleportUtil().hasAcceptedSpawnTeleport = false;
+            player.getSetbackTeleportUtil().lastKnownGoodPosition = null;
 
             // TODO: What does keep all metadata do?
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get() + 1, () -> {

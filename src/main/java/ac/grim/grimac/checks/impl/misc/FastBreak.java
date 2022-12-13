@@ -1,6 +1,7 @@
 package ac.grim.grimac.checks.impl.misc;
 
 import ac.grim.grimac.GrimAPI;
+import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
@@ -28,7 +29,7 @@ import org.bukkit.entity.Player;
 // Also based loosely off of NoCheatPlus FastBreak
 // Also based off minecraft wiki: https://minecraft.fandom.com/wiki/Breaking#Instant_breaking
 @CheckData(name = "FastBreak")
-public class FastBreak extends PacketCheck {
+public class FastBreak extends Check implements PacketCheck {
     public FastBreak(GrimPlayer playerData) {
         super(playerData);
     }
@@ -73,7 +74,7 @@ public class FastBreak extends PacketCheck {
 
                 if (blockDelayBalance > 1000 && shouldModifyPackets()) { // If more than a second of advantage
                     event.setCancelled(true); // Cancelling start digging will cause server to reject block break
-                    player.cancelledPackets.incrementAndGet();
+                    player.onPacketCancel();
                     flagAndAlert("Delay=" + breakDelay);
                 }
 
@@ -123,7 +124,7 @@ public class FastBreak extends PacketCheck {
 
                     if (flagAndAlert("Diff=" + diff + ",Balance=" + blockBreakBalance) && shouldModifyPackets()) {
                         event.setCancelled(true);
-                        player.cancelledPackets.incrementAndGet();
+                        player.onPacketCancel();
                     }
                 }
 

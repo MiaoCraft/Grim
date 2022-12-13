@@ -56,9 +56,10 @@ public class GrimExternalAPI implements GrimAbstractAPI, Initable {
         //Reload checks for all players
         for (GrimPlayer grimPlayer : GrimAPI.INSTANCE.getPlayerDataManager().getEntries()) {
             ChannelHelper.runInEventLoop(grimPlayer.user.getChannel(), () -> {
+                grimPlayer.onReload();
                 grimPlayer.updatePermissions();
                 grimPlayer.punishmentManager.reload();
-                for (Check value : grimPlayer.checkManager.allChecks.values()) {
+                for (AbstractCheck value : grimPlayer.checkManager.allChecks.values()) {
                     value.reload();
                 }
             });

@@ -7,6 +7,13 @@
 alerts:
   # In addition to broadcasting alerts to players, should they also be sent to the console?
   print-to-console: true
+  # This controls whether/how alerts are shared between servers connected to your proxy.
+  # You must have 'bungee-plugin-message-channel' enabled in your Velocity's configuration if Velocity is in use.
+  proxy:
+    # Should alerts be sent to other servers connected to your proxy?
+    send: false
+    # Should the alerts received from other servers be announced to this server?
+    receive: false
 
 verbose:
   print-to-console: false
@@ -84,6 +91,10 @@ TimerA:
   # Could potentially allow 1.8 fast use/fast heal/fast bow bypasses if set too high, 120 ms seems like a good balance
   drift: 120
 
+NegativeTimer:
+  # Number of milliseconds lost while moving before we should start flagging
+  drift: 1200
+
 # Same check method as TimerA, but for vehicles
 TimerVehicle:
   # Target 1.005 timer
@@ -118,6 +129,6 @@ experimental-checks: false
 
 # Grim sometimes cancels illegal packets such as with timer, after X packets in a second cancelled, when should
 # we simply kick the player? This is required as some packet limiters don't count packets cancelled by grim.
-packet-spam-threshold: 150
+packet-spam-threshold: 100
 
 config-version: 8
