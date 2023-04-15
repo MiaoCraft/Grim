@@ -267,8 +267,13 @@ public class CompensatedInventory extends Check implements PacketCheck {
         if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
             WrapperPlayClientCreativeInventoryAction action = new WrapperPlayClientCreativeInventoryAction(event);
             if (player.gamemode != GameMode.CREATIVE) return;
-            if (action.getSlot() >= 1 && action.getSlot() <= 45) {
-                player.getInventory().menu.getSlot(action.getSlot()).set(action.getItemStack());
+
+            boolean valid = action.getSlot() >= 1 &&
+                    (PacketEvents.getAPI().getServerManager().getVersion().isNewerThan(ServerVersion.V_1_8) ?
+                    action.getSlot() <= 45 : action.getSlot() < 45);
+
+            if (valid) {
+                player.getInventory().inventory.getSlot(action.getSlot()).set(action.getItemStack());
                 inventory.getInventoryStorage().handleClientClaimedSlotSet(action.getSlot());
             }
         }
@@ -388,10 +393,11 @@ public class CompensatedInventory extends Check implements PacketCheck {
                 markServerForChangingSlot(i, items.getWindowId());
             }
 
+            int cachedPacketInvSize = packetSendingInventorySize;
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(), () -> {
                 // Never true when the inventory is unsupported.
                 // Vanilla ALWAYS sends the entire inventory to resync, this is a valid thing to check
-                if (slots.size() == packetSendingInventorySize || items.getWindowId() == 0) {
+                if (slots.size() == cachedPacketInvSize || items.getWindowId() == 0) {
                     isPacketInventoryActive = true;
                 }
             });
@@ -442,13 +448,15 @@ public class CompensatedInventory extends Check implements PacketCheck {
                 if (!isPacketInventoryActive) return;
                 if (slot.getWindowId() == -1) { // Carried item
                     inventory.setCarried(slot.getItem());
-                } else if (slot.getWindowId() == -2) { // Direct inventory change
-                    inventory.getInventoryStorage().setItem(slot.getSlot(), slot.getItem());
-                } else if (slot.getWindowId() == 0) { // Player hotbar
-                    // Client ignores this sometimes if not in range when in creative with inventory open
-                    // Other logic can handle this desync... THANKS MOJANG.
-                    inventory.getSlot(slot.getSlot()).set(slot.getItem());
-                } else if (slot.getWindowId() == openWindowID) { // Opened inventory
+                } else if (slot.getWindowId() == -2) { // Direct inventory change (only applied if valid slot)
+                    if (inventory.getInventoryStorage().getSize() > slot.getSlot() && slot.getSlot() >= 0) {
+                        inventory.getInventoryStorage().setItem(slot.getSlot(), slot.getItem());
+                    }
+                } else if (slot.getWindowId() == 0) { // Player hotbar (ONLY!)
+                    if (slot.getSlot() >= 36 && slot.getSlot() <= 45) {
+                        inventory.getSlot(slot.getSlot()).set(slot.getItem());
+                    }
+                } else if (slot.getWindowId() == openWindowID) { // Opened inventory (if not valid, client crashes)
                     menu.getSlot(slot.getSlot()).set(slot.getItem());
                 }
             });

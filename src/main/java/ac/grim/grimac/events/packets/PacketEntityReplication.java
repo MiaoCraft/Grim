@@ -71,14 +71,13 @@ public class PacketEntityReplication extends Check implements PacketCheck {
                 }
             }
         }
-
-        if (event.getPacketType() == PacketType.Play.Server.PING || event.getPacketType() == PacketType.Play.Server.WINDOW_CONFIRMATION) {
-            despawnedEntitiesThisTransaction.clear();
-        }
     }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
+        if (event.getPacketType() == PacketType.Play.Server.PING || event.getPacketType() == PacketType.Play.Server.WINDOW_CONFIRMATION) {
+            despawnedEntitiesThisTransaction.clear();
+        }
         if (event.getPacketType() == PacketType.Play.Server.SPAWN_LIVING_ENTITY) {
             WrapperPlayServerSpawnLivingEntity packetOutEntity = new WrapperPlayServerSpawnLivingEntity(event);
             addEntity(packetOutEntity.getEntityId(), packetOutEntity.getEntityType(), packetOutEntity.getPosition(), packetOutEntity.getYaw(), packetOutEntity.getPitch(), packetOutEntity.getEntityMetadata(), 0);
@@ -325,7 +324,10 @@ public class PacketEntityReplication extends Check implements PacketCheck {
         if (!inThisVehicle && wasInVehicle) {
             player.handleDismountVehicle(event);
         }
-
+        // Better lag compensation if we were affected by this
+        if (wasInVehicle || inThisVehicle) {
+            player.sendTransaction();
+        }
         player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(), () -> {
             PacketEntity vehicle = player.compensatedEntities.getEntity(vehicleID);
 
