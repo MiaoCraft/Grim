@@ -79,7 +79,7 @@ RotationPlace:
 # Prediction-based NoSlow 检查
 # 在这里解释错误的服务器代码......即使在发送垃圾数据包时右键单击和副手按钮也很分辨
 # 比其他反作弊更稳定，但请报告任何错误......我在这里修复了大量的代码问题。
-NoSlow:
+NoSlowA:
   # 有多少偏移量是作弊
   # 标志 0.03-0.2 与 NoSlow 一致
   threshold: 0.001
@@ -134,6 +134,9 @@ Reach:
   # 禁用此功能仍会捕获作弊者，不会导致误报
   # 除非你是专注于 1.8 PvP 的服务器，否则不建议使用这个额外的数据包
   enable-post-packet: false
+
+exploit:
+  allow-sprint-jumping-when-using-elytra: true
 
 # 启用在加入时注入 netty 的日志插件以调试兼容性问题
 debug-pipeline-on-join: false
